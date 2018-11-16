@@ -40,15 +40,15 @@ with graph.as_default():
 	is_training = tf.placeholder(tf.bool)
 	
 	print(X.shape)
+	
+	out = tf.layers.conv2d(X, 32, (2, 2), (1, 1), padding='same', activation=tf.nn.relu)
+	print(out.shape)
+	out = tf.layers.max_pooling2d(out, (3, 3), (2, 2), padding='same')
+	print(out.shape)
 
-	out = tf.layers.conv2d(X, 32, (2, 2), (1, 1), padding='valid', activation=tf.nn.relu)
+	out = tf.layers.conv2d(out, 32, (2, 2), (1, 1), padding='same', activation=tf.nn.relu)
 	print(out.shape)
-	out = tf.layers.max_pooling2d(out, (2, 2), (2, 2), padding='valid')
-	print(out.shape)
-
-	out = tf.layers.conv2d(out, 32, (2, 2), (1, 1), padding='valid', activation=tf.nn.relu)
-	print(out.shape)
-	out = tf.layers.max_pooling2d(out, (2, 2), (2, 2), padding='valid')
+	out = tf.layers.max_pooling2d(out, (3, 3), (2, 2), padding='same')
 	print(out.shape)
 
 	out = tf.reshape(out, [-1, out.shape[1]*out.shape[2]*out.shape[3]])
@@ -118,10 +118,13 @@ def evaluation(session, Xv, yv, epoch):
 #         Training loop and execution.																		 #
 # ---------------------------------------------------------------------------------------------------------- #	
 def train_model (model_version) :
+	global X_data
+	global y_data
+
 	global X_train
 	global y_train
 	
-	X_train, y_train = shuffle(X_train, y_train)
+	X_train, y_train = shuffle(X_data, y_data)
 	X_train, y_train, X_val, y_val = split(X_train, y_train, SPLIT_RATE)
 
 	MODEL_PATH = MODEL_FOLDER + '/' + 'model' + model_version + '.ckpt'
