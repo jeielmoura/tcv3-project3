@@ -60,8 +60,10 @@ with graph.as_default():
 
 
 	out = tf.layers.dense(out, len(classes_train), activation=tf.nn.softmax)
+	#out = tf.layers.dense(out, len(classes_train))
 
 	loss = tf.reduce_mean(tf.reduce_sum((y_one_hot-out)**2))
+	#loss = tf.softmax_cross_entropy_with_logits_v2(logits=out, labels=y_one_hot)
 
 	train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
