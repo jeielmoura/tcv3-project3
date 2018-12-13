@@ -123,10 +123,10 @@ def combine () :
 
 def main () :
 	#train_model('0')
-	train_model('1')
-	train_model('2')
-	train_model('3')
-	train_model('4')
+	#train_model('1')
+	#train_model('2')
+	#train_model('3')
+	#train_model('4')
 
 	combine()
 
