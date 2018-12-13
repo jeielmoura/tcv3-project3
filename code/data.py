@@ -99,8 +99,16 @@ def shuffle(X, y, seed=None):
 #         X2 - 2nd part of data array                                                                        #
 #         y2 - 2nd part of labels array                                                                      #
 # ---------------------------------------------------------------------------------------------------------- #
-def split(X, y, rate=SPLIT_RATE):
+def split(X, y, rate):
 	assert len(X) == len(y), "The 1st dimension size must be the same for both arrays!"
 	idx = int(len(X)*float(rate))
 	return X[:idx], y[:idx], X[idx:], y[idx:]
 
+X_train, y_train, classes_train = load_train_dataset()
+X_train = X_train/255.
+
+X_train, y_train = shuffle(X_train, y_train, ENSEMBLE_SEED)
+X_train, y_train, X_ensem, y_ensem = split(X_train, y_train, ENSEMBLE_SPLIT_RATE)
+
+X_val = []
+y_val = []

@@ -30,31 +30,29 @@ def combine_evaluation (sess) :
 	if np.sum(NNS_USED) == 0 :
 		return 0., -1.
 
-	train_ans = np.ones( (NUM_IMAGES,len(classes_train)), dtype=np.uint8)/1.
+	train_ans = np.ones( (len(X_ensem),len(classes_train)), dtype=np.uint8)/1.
 	
 	saver = tf.train.Saver()
 	for i in range (NUM_NNS) :
 		if NNS_USED[i] :
 			saver.restore(sess, NNS_PATH[i])
-			for j in range( len(X_data) ) :
-				ret = sess.run([out], feed_dict = { X: np.expand_dims(X_data[j], axis=0), is_training: False })
+			for j in range( len(X_ensem) ) :
+				ret = sess.run([out], feed_dict = { X: np.expand_dims(X_ensem[j], axis=0), is_training: False })
 				train_ans[j] *= ret[0].reshape(-1)
 
 	eval_loss = 0.
 	eval_acc = 0.
-	for j in range( len(X_data) ) :
+	for j in range( len(X_ensem) ) :
 		resp = np.argmax(train_ans[j])
-		eval_acc += (resp == y_data[j])
-		eval_loss += (int(resp) - int(y_data[j]))**2
+		eval_acc += (resp == y_ensem[j])
+		eval_loss += (int(resp) - int(y_ensem[j]))**2
 
-	return eval_acc/NUM_IMAGES, eval_loss/NUM_IMAGES
+	return eval_acc/len(X_ensem), eval_loss/len(X_ensem)
 
 def recursion (sess, i=0) :
-	global best_val_acc
-	global best_val_loss
+	global best_val_acc, best_val_loss
 	global best_nn_num
-	global NNS_USED
-	global NNS_USED_BEST
+	global NNS_USED, NNS_USED_BEST
 
 	if (i < NUM_NNS) :
 		NNS_USED[i] = 0
@@ -125,10 +123,10 @@ def combine () :
 
 def main () :
 	#train_model('0')
-	#train_model('1')
-	#train_model('2')
-	#train_model('3')
-	#train_model('4')
+	train_model('1')
+	train_model('2')
+	train_model('3')
+	train_model('4')
 
 	combine()
 

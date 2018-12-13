@@ -19,11 +19,7 @@ from data import *
 #         Load the training set, shuffle its images and then split them in training and validation subsets.  #
 #         After that, load the testing set.                                                                  #
 # ---------------------------------------------------------------------------------------------------------- #
-X_data, y_data, classes_train = load_train_dataset()
-X_data = X_data/255.
 
-X_train = np.array(X_data)
-y_train = np.array(y_data)
 
 # ---------------------------------------------------------------------------------------------------------- #
 # Description:                                                                                               #
@@ -62,7 +58,8 @@ with graph.as_default():
 
 	out = tf.layers.dropout(out, rate=0.4, training=is_training)
 
-	out = tf.layers.dense(out, len(classes_train), activation=tf.nn.sigmoid)
+
+	out = tf.layers.dense(out, len(classes_train), activation=tf.nn.softmax)
 
 	loss = tf.reduce_mean(tf.reduce_sum((y_one_hot-out)**2))
 
@@ -118,14 +115,21 @@ def evaluation(session, Xv, yv, epoch):
 #         Training loop and execution.																		 #
 # ---------------------------------------------------------------------------------------------------------- #	
 def train_model (model_version) :
-	global X_data
-	global y_data
+	global X_train, y_train
+	global X_val, y_val
+	global X_ensem, y_ensem
 
-	global X_train
-	global y_train
-	
-	X_train, y_train = shuffle(X_data, y_data)
-	X_train, y_train, X_val, y_val = split(X_train, y_train, SPLIT_RATE)
+	global LEARNING_RATES, LEARNING_RATE_DECAY
+
+	LEARNING_RATES_ARRAY = LEARNING_RATES
+
+	X_train, y_train = shuffle(X_train, y_train)
+	X_train, y_train, X_val, y_val = split(X_train, y_train, TRAIN_SPLIT_RATE)
+
+	X_val = np.concatenate( (X_val, X_ensem), axis=0)
+	y_val = np.concatenate( (y_val, y_ensem), axis=0)
+
+	print (y_val.shape)
 
 	MODEL_PATH = MODEL_FOLDER + '/' + 'model' + model_version + '.ckpt'
 	RESULT_PATH = MODEL_FOLDER + '/' + 'result' + model_version + '.txt'
@@ -141,7 +145,9 @@ def train_model (model_version) :
 		epoch = 1
 		while epoch <= NUM_EPOCHS_LIMIT :
 			updated = False
-			for LR in LEARNING_RATES :
+			for LR in LEARNING_RATES_ARRAY :
+				X_train, y_train = shuffle(X_train, y_train)
+
 				training_epoch(session, train_op, LR, epoch)
 				val_acc, val_loss = evaluation(session, X_val, y_val, epoch)
 
@@ -156,6 +162,7 @@ def train_model (model_version) :
 					saver.save(session, MODEL_PATH)
 					print('ACC:'+str(100*best_val_acc)+' Loss:'+str(best_val_loss))
 
+			LEARNING_RATES_ARRAY = [LR*LEARNING_RATE_DECAY for LR in LEARNING_RATES_ARRAY]
 			
 			if updated :
 				epoch = 1
